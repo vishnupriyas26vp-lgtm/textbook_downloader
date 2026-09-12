@@ -447,7 +447,7 @@
       <div class="form-row">
         <div style="flex: 1; min-width: 140px;">
           <span class="label-heading">Term:</span>
-          <select id="termSelect" class="select-input" style="width: 100%;">
+          <select id="termSelect" class="select-input" style="width: 100%;" onchange="triggerScan()">
             <option value="All Terms">All Terms</option>
             <option value="Term 1">Term 1</option>
             <option value="Term 2">Term 2</option>
@@ -458,7 +458,7 @@
 
         <div style="flex: 1; min-width: 160px;">
           <span class="label-heading">Edition:</span>
-          <select id="editionSelect" class="select-input" style="width: 100%;">
+          <select id="editionSelect" class="select-input" style="width: 100%;" onchange="triggerScan()">
             <option value="All Editions">All Editions</option>
             <option value="2024-25 Edition">2024-25 Edition</option>
             <option value="2022-23 Edition">2022-23 Edition</option>
@@ -589,6 +589,7 @@
 
     function selectAllClasses(checked) {
       document.querySelectorAll('input[name="class"]').forEach(cb => cb.checked = checked);
+      triggerScan();
     }
 
     function switchTab(evt, tabId) {
@@ -640,7 +641,10 @@
     async function triggerScan() {
       const selectedClasses = Array.from(document.querySelectorAll('input[name="class"]:checked')).map(cb => parseInt(cb.value));
       if (!selectedClasses.length) {
-        alert("Please select at least one class.");
+        document.getElementById('countBooks').innerText = "0";
+        document.getElementById('btnDownload').disabled = true;
+        document.getElementById('lblStatus').innerText = "Please select at least one class checkbox.";
+        document.getElementById('booksTbody').innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No classes selected. Please check at least one class above.</td></tr>`;
         return;
       }
       const termFilter = document.getElementById('termSelect').value;
@@ -648,7 +652,7 @@
 
       document.getElementById('btnScan').disabled = true;
       document.getElementById('lblStatus').innerText = "Scanning verified Tamil textbooks...";
-      addLog("[SCAN] Initiating scan for verified Tamil Medium school textbooks...");
+      addLog(`[SCAN] Filtering: Classes [${selectedClasses.join(', ')}] | Edition: ${editionFilter} | Term: ${termFilter}`);
 
       // Filter from embedded catalog
       let results = [];
@@ -659,22 +663,24 @@
         for (const b of classBooks) {
           // Term filter check
           if (termFilter !== "All Terms") {
-            const expTerm = termFilter.toLowerCase().replace("term ", "").replace("term-", "").trim();
-            const resTerm = (b.term || "").toLowerCase().replace("term ", "").replace("term-", "").trim();
-            if (expTerm !== resTerm && b.term !== "Full Book" && termFilter !== "Full Book") {
-              continue;
-            }
-            if (termFilter === "Full Book" && b.term !== "Full Book") {
+            const normFilter = termFilter.toLowerCase().replace(/[\s\-_]/g, "");
+            const normBookTerm = (b.term || "").toLowerCase().replace(/[\s\-_]/g, "");
+            if (normFilter !== normBookTerm) {
               continue;
             }
           }
 
           // Edition filter check
           if (editionFilter !== "All Editions") {
-            const expYears = (editionFilter.match(/\\d{4}/g) || []);
-            const resYears = ((b.edition || "").match(/\\d{4}/g) || []);
-            const hasCommonYear = expYears.some(y => resYears.includes(y));
-            if (!hasCommonYear && !editionFilter.toLowerCase().includes("old")) {
+            const filterYears = editionFilter.match(/\d{4}/g) || [];
+            const bookYears = (b.edition || "").match(/\d{4}/g) || [];
+            const matchYear = filterYears.length > 0 && filterYears.some(y => bookYears.includes(y));
+            const isOldFilter = editionFilter.toLowerCase().includes("old");
+            const isOldBook = (b.edition || "").toLowerCase().includes("old");
+
+            if (isOldFilter) {
+              if (!isOldBook) continue;
+            } else if (!matchYear && !b.edition.toLowerCase().includes(editionFilter.toLowerCase().replace(" edition", ""))) {
               continue;
             }
           }
@@ -690,11 +696,11 @@
       if (results.length > 0) {
         document.getElementById('btnDownload').disabled = false;
         document.getElementById('lblStatus').innerText = `Found ${results.length} verified Tamil Medium textbooks.`;
-        addLog(`[SCAN COMPLETE] Found ${results.length} verified Tamil Medium textbooks. Ready to download!`);
+        addLog(`[SCAN COMPLETE] Found ${results.length} verified Tamil Medium textbooks matching criteria.`);
 
         const tbody = document.getElementById('booksTbody');
         tbody.innerHTML = results.map((b, idx) => {
-          const safeName = `${b.class_num}th_Tamil_Medium_${b.subject_display.replace(/[^a-zA-Z0-9_-]/g, '_')}_${(b.term || 'Full_Book').replace(/\\s+/g, '_')}.pdf`;
+          const safeName = `${b.class_num}th_Tamil_Medium_${b.subject_display.replace(/[^a-zA-Z0-9_-]/g, '_')}_${(b.term || 'Full_Book').replace(/\s+/g, '_')}.pdf`;
           const directDl = getDirectDownloadUrl(b.download_url);
           return `
             <tr>
@@ -715,9 +721,15 @@
         }).join('');
       } else {
         document.getElementById('btnDownload').disabled = true;
-        document.getElementById('lblStatus').innerText = "No verified Tamil Medium books match your filter.";
-        document.getElementById('booksTbody').innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No verified books found for the selected filter.</td></tr>`;
-        addLog("[SCAN] No books matched current filters.");
+        let emptyNotice = "No verified Tamil Medium books match your selected filter combination.";
+        if (termFilter.startsWith("Term") && (editionFilter.includes("2024") || editionFilter.includes("2022"))) {
+          emptyNotice = `💡 <strong>Curriculum Notice:</strong> For <strong>${editionFilter}</strong>, textbooks are published as <strong>Full Book</strong> only (consolidated for the full academic year).<br><br>👉 To view <strong>${termFilter}</strong> textbooks, please switch the Edition dropdown to <strong>"2019 Edition"</strong> or <strong>"Old Edition"</strong>.`;
+        } else if (termFilter.startsWith("Term") && selectedClasses.every(c => c >= 10)) {
+          emptyNotice = `💡 <strong>Curriculum Notice:</strong> Classes 10, 11, and 12 are published as <strong>Full Book</strong> only.<br><br>👉 For Term 1, Term 2, or Term 3 textbooks, select <strong>Class 8</strong> or <strong>Class 9</strong> with <strong>2019 Edition</strong>.`;
+        }
+        document.getElementById('lblStatus').innerText = "No textbooks match this filter combination.";
+        document.getElementById('booksTbody').innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px 20px; font-size: 13.5px; line-height: 1.7;">${emptyNotice}</td></tr>`;
+        addLog(`[SCAN] Filtered 0 books for ${editionFilter} | ${termFilter}`);
       }
     }
 
@@ -776,8 +788,11 @@
       addLog("[CONTROL] Cancellation requested.");
     }
 
-    // Auto scan Class 8 on startup
+    // Auto scan on startup and bind instant filter updates
     window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('input[name="class"]').forEach(cb => {
+        cb.addEventListener('change', () => triggerScan());
+      });
       triggerScan();
     });
   </script>

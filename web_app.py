@@ -96,6 +96,20 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
+    def serve_file(self, rel_path: str, mime: str):
+        target = Path(__file__).parent / rel_path
+        if target.exists():
+            content = target.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", mime)
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(content)
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
@@ -103,6 +117,10 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
 
         if path == "/" or path == "/index.html":
             self.serve_html()
+        elif path == "/catalog.js":
+            self.serve_file("catalog.js", "application/javascript; charset=utf-8")
+        elif path == "/catalog.json":
+            self.serve_file("catalog.json", "application/json; charset=utf-8")
         elif path == "/api/status":
             with state_lock:
                 self.send_json_response(app_state)
@@ -442,6 +460,17 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         self.send_json_response({"status": "cancelled"})
 
     def serve_html(self):
+        index_file = Path(__file__).parent / "index.html"
+        if index_file.exists():
+            content = index_file.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(content)
+            return
+
         default_dir = DEFAULT_DOWNLOAD_DIR.replace("\\", "/")
         html_content = """<!DOCTYPE html>
 <html lang="en">

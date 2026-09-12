@@ -344,6 +344,74 @@ class TestScraperZeroEnglishLeakage(unittest.TestCase):
             self.assertEqual(b.context.medium, "Tamil")
             self.assertEqual(b.term, "Term 1")
 
+    def test_term_filtering_exact(self):
+        scraper = TamilTextbookScraper()
+        q_tamil = []
+        q_amb = []
+
+        res_term1 = TextbookResource(
+            class_num=8,
+            edition="2019 Edition",
+            term="Term 1",
+            subject_raw="கணிதம்",
+            subject_display="Mathematics",
+            tamil_title="கணிதம்",
+            download_url="https://example.com/tm_term1.pdf",
+            source_page="https://example.com",
+            context=MediumContext(8, "2019 Edition", "Tamil", "Term 1", "", "", ""),
+        )
+        res_full = TextbookResource(
+            class_num=8,
+            edition="2024-25 Edition",
+            term="Full Book",
+            subject_raw="கணிதம்",
+            subject_display="Mathematics",
+            tamil_title="கணிதம்",
+            download_url="https://example.com/tm_full.pdf",
+            source_page="https://example.com",
+            context=MediumContext(8, "2024-25 Edition", "Tamil", "Full Book", "", "", ""),
+        )
+
+        # When Term 1 requested: only Term 1 added, Full Book rejected
+        scraper._categorize_resource(res_term1, q_tamil, q_amb, target_term="Term 1", target_edition="All Editions")
+        scraper._categorize_resource(res_full, q_tamil, q_amb, target_term="Term 1", target_edition="All Editions")
+        self.assertEqual(len(q_tamil), 1)
+        self.assertEqual(q_tamil[0].term, "Term 1")
+
+    def test_edition_filtering_matching(self):
+        scraper = TamilTextbookScraper()
+        q_tamil = []
+        q_amb = []
+
+        res_2024 = TextbookResource(
+            class_num=10,
+            edition="2024-25 Edition",
+            term="Full Book",
+            subject_raw="அறிவியல்",
+            subject_display="Science",
+            tamil_title="அறிவியல்",
+            download_url="https://example.com/tm_2024.pdf",
+            source_page="https://example.com",
+            context=MediumContext(10, "2024-25 Edition", "Tamil", "Full Book", "", "", ""),
+        )
+        res_2019 = TextbookResource(
+            class_num=10,
+            edition="2019 Edition",
+            term="Full Book",
+            subject_raw="அறிவியல்",
+            subject_display="Science",
+            tamil_title="அறிவியல்",
+            download_url="https://example.com/tm_2019.pdf",
+            source_page="https://example.com",
+            context=MediumContext(10, "2019 Edition", "Tamil", "Full Book", "", "", ""),
+        )
+
+        scraper._categorize_resource(res_2024, q_tamil, q_amb, target_term="All Terms", target_edition="2024-25 Edition")
+        scraper._categorize_resource(res_2019, q_tamil, q_amb, target_term="All Terms", target_edition="2024-25 Edition")
+        self.assertEqual(len(q_tamil), 1)
+        self.assertEqual(q_tamil[0].edition, "2024-25 Edition")
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -2,7 +2,7 @@ const TEXTBOOK_CATALOG = {
   "8": [
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -12,7 +12,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -22,7 +22,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics",
       "subject_display": "Mathematics",
@@ -32,7 +32,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Science",
       "subject_display": "Science",
@@ -42,7 +42,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Social Science",
       "subject_display": "Social Science",
@@ -52,7 +52,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 8,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physical Education",
       "subject_display": "Physical Education",
@@ -464,7 +464,7 @@ const TEXTBOOK_CATALOG = {
   "9": [
     {
       "class_num": 9,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -474,7 +474,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 9,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -484,7 +484,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 9,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics",
       "subject_display": "Mathematics",
@@ -494,7 +494,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 9,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Science",
       "subject_display": "Science",
@@ -504,7 +504,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 9,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Social Science",
       "subject_display": "Social Science",
@@ -866,7 +866,7 @@ const TEXTBOOK_CATALOG = {
   "10": [
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -876,7 +876,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -886,7 +886,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics",
       "subject_display": "Mathematics",
@@ -896,7 +896,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Science",
       "subject_display": "Science",
@@ -906,7 +906,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Social Science",
       "subject_display": "Social Science",
@@ -916,7 +916,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physical Education",
       "subject_display": "Physical Education",
@@ -926,7 +926,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -936,7 +936,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -946,7 +946,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics",
       "subject_display": "Mathematics",
@@ -956,7 +956,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Science",
       "subject_display": "Science",
@@ -966,7 +966,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 10,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Social Science",
       "subject_display": "Social Science",
@@ -1238,7 +1238,7 @@ const TEXTBOOK_CATALOG = {
   "11": [
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Accountancy",
       "subject_display": "Accountancy",
@@ -1248,7 +1248,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Advance Tamil",
       "subject_display": "Advance Tamil",
@@ -1258,7 +1258,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Agricultural Science",
       "subject_display": "Agricultural Science",
@@ -1268,7 +1268,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Auditing",
       "subject_display": "Auditing",
@@ -1278,7 +1278,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Automobile Engineering",
       "subject_display": "Basic Automobile Engineering",
@@ -1288,7 +1288,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Civil Engineering",
       "subject_display": "Basic Civil Engineering",
@@ -1298,7 +1298,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Electrical Engineering",
       "subject_display": "Basic Electrical Engineering",
@@ -1308,7 +1308,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Electronics Engineering",
       "subject_display": "Basic Electronics Engineering",
@@ -1318,7 +1318,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Mechanical Engineering",
       "subject_display": "Basic Mechanical Engineering",
@@ -1328,7 +1328,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Botany",
       "subject_display": "Bio Botany",
@@ -1338,7 +1338,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Chemistry",
       "subject_display": "Bio Chemistry",
@@ -1348,7 +1348,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Zoology",
       "subject_display": "Bio Zoology",
@@ -1358,7 +1358,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Botany Volume 1",
       "subject_display": "Botany Volume",
@@ -1368,7 +1368,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Business Mathematics and Statistics",
       "subject_display": "Business Mathematics and Statistics",
@@ -1378,7 +1378,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Chemistry Volume 1",
       "subject_display": "Chemistry Volume",
@@ -1388,7 +1388,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Chemistry Volume 2",
       "subject_display": "Chemistry Volume",
@@ -1398,7 +1398,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Commerce",
       "subject_display": "Commerce",
@@ -1408,7 +1408,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Communicative English",
       "subject_display": "Communicative English",
@@ -1418,7 +1418,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Computer Applications",
       "subject_display": "Computer Applications",
@@ -1428,7 +1428,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Computer Science",
       "subject_display": "Computer Science",
@@ -1438,7 +1438,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Economics",
       "subject_display": "Economics",
@@ -1448,7 +1448,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Employability Skills",
       "subject_display": "Employability Skills",
@@ -1458,7 +1458,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -1468,7 +1468,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Food Service Management",
       "subject_display": "Food Service Management",
@@ -1478,7 +1478,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "General Nursing",
       "subject_display": "General Nursing",
@@ -1488,7 +1488,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Geography",
       "subject_display": "Geography",
@@ -1498,7 +1498,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "History",
       "subject_display": "History",
@@ -1508,7 +1508,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Home Science",
       "subject_display": "Home Science",
@@ -1518,7 +1518,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics Volume 1",
       "subject_display": "Mathematics Volume",
@@ -1528,7 +1528,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics Volume 2",
       "subject_display": "Mathematics Volume",
@@ -1538,7 +1538,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Micro Biology",
       "subject_display": "Micro Biology",
@@ -1548,7 +1548,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Nutrition and Dietetics",
       "subject_display": "Nutrition and Dietetics",
@@ -1558,7 +1558,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Office Management and Secretaryship & Typography and Computer Applications",
       "subject_display": "Office Management and Secretaryship & Typography and Computer Applications",
@@ -1568,7 +1568,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physical Education",
       "subject_display": "Physical Education",
@@ -1578,7 +1578,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physics Volume 1",
       "subject_display": "Physics Volume",
@@ -1588,7 +1588,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physics Volume 2",
       "subject_display": "Physics Volume",
@@ -1598,7 +1598,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Political Science",
       "subject_display": "Political Science",
@@ -1608,7 +1608,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Statistics",
       "subject_display": "Statistics",
@@ -1618,7 +1618,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -1628,7 +1628,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Textiles Technology",
       "subject_display": "Textiles Technology",
@@ -1638,7 +1638,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Textiles and Dress Designing",
       "subject_display": "Textiles and Dress Designing",
@@ -1648,7 +1648,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 11,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Zoology",
       "subject_display": "Zoology",
@@ -2980,7 +2980,7 @@ const TEXTBOOK_CATALOG = {
   "12": [
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Accountancy",
       "subject_display": "Accountancy",
@@ -2990,7 +2990,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Advance Tamil",
       "subject_display": "Advance Tamil",
@@ -3000,7 +3000,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Agricultural Science",
       "subject_display": "Agricultural Science",
@@ -3010,7 +3010,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Auditing",
       "subject_display": "Auditing",
@@ -3020,7 +3020,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Automobile Engineering",
       "subject_display": "Basic Automobile Engineering",
@@ -3030,7 +3030,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Civil Engineering",
       "subject_display": "Basic Civil Engineering",
@@ -3040,7 +3040,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Electrical Engineering",
       "subject_display": "Basic Electrical Engineering",
@@ -3050,7 +3050,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Electronics Engineering",
       "subject_display": "Basic Electronics Engineering",
@@ -3060,7 +3060,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Basic Mechanical Engineering",
       "subject_display": "Basic Mechanical Engineering",
@@ -3070,7 +3070,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Botany",
       "subject_display": "Bio Botany",
@@ -3080,7 +3080,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Chemistry",
       "subject_display": "Bio Chemistry",
@@ -3090,7 +3090,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Bio Zoology",
       "subject_display": "Bio Zoology",
@@ -3100,7 +3100,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Botany",
       "subject_display": "Botany",
@@ -3110,7 +3110,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Business Mathematics and Statistics",
       "subject_display": "Business Mathematics and Statistics",
@@ -3120,7 +3120,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Chemistry Volume 1",
       "subject_display": "Chemistry Volume",
@@ -3130,7 +3130,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Chemistry Volume 2",
       "subject_display": "Chemistry Volume",
@@ -3140,7 +3140,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Commerce",
       "subject_display": "Commerce",
@@ -3150,7 +3150,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Communicative English",
       "subject_display": "Communicative English",
@@ -3160,7 +3160,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Computer Applications",
       "subject_display": "Computer Applications",
@@ -3170,7 +3170,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Computer Science",
       "subject_display": "Computer Science",
@@ -3180,7 +3180,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Economics",
       "subject_display": "Economics",
@@ -3190,7 +3190,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Employability Skills",
       "subject_display": "Employability Skills",
@@ -3200,7 +3200,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "English",
       "subject_display": "English",
@@ -3210,7 +3210,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Food Service Management",
       "subject_display": "Food Service Management",
@@ -3220,7 +3220,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "General Nursing",
       "subject_display": "General Nursing",
@@ -3230,7 +3230,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Geography",
       "subject_display": "Geography",
@@ -3240,7 +3240,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "History",
       "subject_display": "History",
@@ -3250,7 +3250,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Home Science",
       "subject_display": "Home Science",
@@ -3260,7 +3260,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics Volume 1",
       "subject_display": "Mathematics Volume",
@@ -3270,7 +3270,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Mathematics Volume 2",
       "subject_display": "Mathematics Volume",
@@ -3280,7 +3280,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Micro Biology",
       "subject_display": "Micro Biology",
@@ -3290,7 +3290,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Nutrition and Dietetics",
       "subject_display": "Nutrition and Dietetics",
@@ -3300,7 +3300,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Office Management and Secretaryship & Typography and Computer Applications",
       "subject_display": "Office Management and Secretaryship & Typography and Computer Applications",
@@ -3310,7 +3310,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physical Education",
       "subject_display": "Physical Education",
@@ -3320,7 +3320,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physics Volume 1",
       "subject_display": "Physics Volume",
@@ -3330,7 +3330,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Physics Volume 2",
       "subject_display": "Physics Volume",
@@ -3340,7 +3340,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Political Science",
       "subject_display": "Political Science",
@@ -3350,7 +3350,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Statistics",
       "subject_display": "Statistics",
@@ -3360,7 +3360,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Tamil",
       "subject_display": "Tamil",
@@ -3370,7 +3370,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Textiles Technology",
       "subject_display": "Textiles Technology",
@@ -3380,7 +3380,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Textiles and Dress Designing",
       "subject_display": "Textiles and Dress Designing",
@@ -3390,7 +3390,7 @@ const TEXTBOOK_CATALOG = {
     },
     {
       "class_num": 12,
-      "edition": "Latest Edition (2024-25)",
+      "edition": "2024-25 Edition",
       "term": "Full Book",
       "subject_raw": "Zoology",
       "subject_display": "Zoology",

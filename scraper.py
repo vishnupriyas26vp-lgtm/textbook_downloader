@@ -303,14 +303,22 @@ class TamilTextbookScraper:
         """Validates medium strictly and places resource in appropriate queue."""
         # Check target term filter
         if target_term and target_term != "All Terms":
-            clean_tgt = target_term.replace("Term ", "").strip().lower()
-            clean_res = resource.term.replace("Term ", "").strip().lower()
-            if clean_tgt not in clean_res and resource.term != "Full Book":
+            norm_tgt = re.sub(r"[\s\-_]", "", target_term).lower()
+            norm_res = re.sub(r"[\s\-_]", "", resource.term or "").lower()
+            if norm_tgt != norm_res:
                 return
 
         # Check target edition filter
         if target_edition and target_edition != "All Editions":
-            if target_edition.lower() not in resource.edition.lower():
+            tgt_years = re.findall(r"\d{4}", target_edition)
+            res_years = re.findall(r"\d{4}", resource.edition or "")
+            match_year = any(y in res_years for y in tgt_years) if tgt_years else False
+            is_old_tgt = "old" in target_edition.lower()
+            is_old_res = "old" in (resource.edition or "").lower()
+            if is_old_tgt:
+                if not is_old_res:
+                    return
+            elif not match_year and target_edition.lower().replace(" edition", "") not in (resource.edition or "").lower():
                 return
 
         # STRICT MEDIUM VALIDATION
