@@ -1,19 +1,31 @@
 """
 Local Web Application for Tamil Nadu School Textbooks Auto-Downloader.
 STRICT REQUIREMENT: TAMIL MEDIUM ONLY.
-Runs a local server and opens directly in the browser (Google Chrome, Edge, etc.).
+Runs a responsive server supporting both Desktop and Mobile browsers.
 """
 
 import sys
 import os
+import re
 import json
 import time
+import socket
+import zipfile
+import io
 import threading
 import webbrowser
+import urllib.parse
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from typing import List, Dict, Any, Optional
+
+# Ensure UTF-8 output handling
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 from scraper import TamilTextbookScraper
 from downloader import TamilTextbookDownloader
@@ -46,6 +58,18 @@ def add_log(msg: str):
             app_state["logs"] = app_state["logs"][-2000:]
 
 
+def get_local_ip() -> str:
+    """Detects local LAN IP for mobile Wi-Fi connection."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
@@ -73,11 +97,21 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == "/" or self.path == "/index.html":
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+        query = urllib.parse.parse_qs(parsed.query)
+
+        if path == "/" or path == "/index.html":
             self.serve_html()
-        elif self.path == "/api/status":
+        elif path == "/api/status":
             with state_lock:
                 self.send_json_response(app_state)
+        elif path == "/api/system_info":
+            self.handle_system_info()
+        elif path == "/api/direct_download":
+            self.handle_direct_download(query)
+        elif path == "/api/download_zip":
+            self.handle_download_zip()
         else:
             self.send_response(404)
             self.end_headers()
@@ -103,6 +137,122 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+    def handle_system_info(self):
+        is_android = (
+            "ANDROID_ROOT" in os.environ
+            or "TERMUX_VERSION" in os.environ
+            or Path("/sdcard").exists()
+            or Path("/storage/emulated/0").exists()
+        )
+
+        if Path("/storage/emulated/0/Download").exists():
+            mobile_path = "/storage/emulated/0/Download/Tamil_Medium"
+        elif Path("/sdcard/Download").exists():
+            mobile_path = "/sdcard/Download/Tamil_Medium"
+        else:
+            mobile_path = str((Path.home() / "Downloads" / "Tamil_Medium").resolve())
+
+        project_path = str((Path(__file__).parent / "downloads" / "Tamil_Medium").resolve())
+        default_dir = mobile_path if is_android else DEFAULT_DOWNLOAD_DIR
+
+        self.send_json_response({
+            "is_android": is_android,
+            "default_dest": default_dir.replace("\\", "/"),
+            "mobile_download_path": mobile_path.replace("\\", "/"),
+            "project_download_path": project_path.replace("\\", "/"),
+        })
+
+    def handle_direct_download(self, query: Dict[str, List[str]]):
+        book_url = query.get("url", [""])[0]
+        book_name = query.get("name", ["Tamil_Medium_Textbook.pdf"])[0]
+
+        if not book_url:
+            self.send_response(400)
+            self.end_headers()
+            self.wfile.write(b"Missing 'url' parameter.")
+            return
+
+        safe_name = re.sub(r'[\\/*?:"<>|]', "", book_name)
+        if not safe_name.lower().endswith(".pdf"):
+            safe_name += ".pdf"
+
+        encoded_name = urllib.parse.quote(safe_name)
+        downloader = TamilTextbookDownloader(download_dir=DEFAULT_DOWNLOAD_DIR)
+        direct_url = downloader.resolve_download_url(book_url)
+
+        try:
+            stream = downloader.open_download_stream(direct_url)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/pdf")
+            self.send_header("Content-Disposition", f'attachment; filename="{safe_name}"; filename*=UTF-8\'\'{encoded_name}')
+            content_length = stream.headers.get("Content-Length")
+            if content_length:
+                self.send_header("Content-Length", content_length)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+
+            chunk_size = 64 * 1024
+            while True:
+                chunk = stream.read(chunk_size)
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+        except Exception as e:
+            add_log(f"[DIRECT DOWNLOAD ERROR] {e}")
+            try:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(f"Direct download error: {e}".encode("utf-8"))
+            except Exception:
+                pass
+
+    def handle_download_zip(self):
+        with state_lock:
+            pool = list(app_state["discovered_books"])
+
+        if not pool:
+            self.send_response(400)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.end_headers()
+            self.wfile.write("No verified Tamil Medium books found. Run a scan first.".encode("utf-8"))
+            return
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/zip")
+        self.send_header("Content-Disposition", 'attachment; filename="Tamil_Medium_School_Textbooks.zip"')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+        downloader = TamilTextbookDownloader(download_dir=DEFAULT_DOWNLOAD_DIR)
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for b in pool:
+                try:
+                    c_num = b["class_num"]
+                    s_name = re.sub(r'[\\/*?:"<>|]', "", b["subject_display"]).strip()
+                    term_c = b["term"].replace(" ", "_") if b["term"] else "Full_Book"
+                    fname = f"Class_{c_num}/{c_num}th_Tamil_Medium_{s_name}_{term_c}.pdf"
+
+                    disk_path = None
+                    if downloader_instance:
+                        candidates = list(downloader_instance.download_dir.glob(f"**/{c_num}th_Tamil_Medium_{s_name}_{term_c}.pdf"))
+                        if candidates and candidates[0].exists():
+                            disk_path = candidates[0]
+
+                    if disk_path and disk_path.exists():
+                        zf.write(str(disk_path), arcname=fname)
+                    else:
+                        direct_url = downloader.resolve_download_url(b["download_url"])
+                        stream = downloader.open_download_stream(direct_url)
+                        data = stream.read()
+                        if data and data.startswith(b"%PDF-"):
+                            zf.writestr(fname, data)
+                except Exception as ex:
+                    add_log(f"[ZIP WARNING] Skipped {b.get('subject_display')} in zip: {ex}")
+
+        self.wfile.write(zip_buffer.getvalue())
 
     def handle_scan(self, params: Dict[str, Any]):
         classes = params.get("classes", [8])
@@ -162,11 +312,15 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
 
     def handle_download(self, params: Dict[str, Any]):
         global downloader_instance
-        raw_dest = params.get("dest", DEFAULT_DOWNLOAD_DIR)
+        raw_dest = params.get("dest", DEFAULT_DOWNLOAD_DIR).strip()
+        if not raw_dest:
+            raw_dest = DEFAULT_DOWNLOAD_DIR
+
         dest_path = Path(raw_dest)
         if not dest_path.is_absolute():
             dest_path = (Path(__file__).parent / dest_path).resolve()
         dest = str(dest_path)
+
         term = params.get("term", "All Terms")
         edition = params.get("edition", "All Editions")
         selected_urls = params.get("selected_urls", [])
@@ -176,7 +330,6 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
                 self.send_json_response({"error": "An operation is already in progress"}, 400)
                 return
 
-            # Match discovered books to models
             pool = app_state["discovered_books"]
             if selected_urls:
                 targets = [b for b in pool if b["download_url"] in selected_urls]
@@ -225,7 +378,6 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
             on_file_complete=on_file_comp,
         )
 
-        # Convert back to TextbookResource objects
         from models import MediumContext
         resources = []
         for t in targets:
@@ -290,11 +442,12 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         self.send_json_response({"status": "cancelled"})
 
     def serve_html(self):
+        default_dir = DEFAULT_DOWNLOAD_DIR.replace("\\", "/")
         html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tamil Nadu School Textbooks Auto-Downloader (Tamil Medium Only)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -310,6 +463,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       --accent-green-dark: #064e3b;
       --accent-blue: #3b82f6;
       --accent-blue-hover: #2563eb;
+      --accent-purple: #8b5cf6;
       --accent-red: #ef4444;
       --accent-amber: #f59e0b;
     }
@@ -319,7 +473,8 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       background-color: var(--bg-main);
       color: var(--text-main);
       line-height: 1.5;
-      padding: 24px;
+      padding: 16px;
+      -webkit-tap-highlight-color: transparent;
     }
     .container { max-width: 1200px; margin: 0 auto; }
     
@@ -328,7 +483,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       background: linear-gradient(135deg, #151d30 0%, #1e293b 100%);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 24px 30px;
+      padding: 20px 24px;
       margin-bottom: 20px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
       display: flex;
@@ -338,7 +493,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       gap: 16px;
     }
     .header-title h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       letter-spacing: -0.5px;
       color: #ffffff;
@@ -357,8 +512,8 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       border: 1px solid var(--accent-green);
       color: #34d399;
       font-weight: 700;
-      font-size: 14px;
-      padding: 10px 18px;
+      font-size: 13px;
+      padding: 8px 16px;
       border-radius: 9999px;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -385,15 +540,15 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
     .form-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 16px;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .form-row:last-child { margin-bottom: 0; }
     
@@ -403,18 +558,18 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--text-muted);
-      margin-right: 8px;
+      margin-right: 6px;
     }
     .checkbox-group {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
     .custom-checkbox {
       background: #1e293b;
       border: 1px solid var(--border-color);
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
@@ -423,9 +578,10 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s;
+      min-height: 40px;
     }
     .custom-checkbox:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
-    .custom-checkbox input { accent-color: var(--accent-green); cursor: pointer; }
+    .custom-checkbox input { accent-color: var(--accent-green); cursor: pointer; width: 16px; height: 16px; }
 
     .select-input, .text-input {
       background: #1e293b;
@@ -437,11 +593,85 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       outline: none;
       transition: border-color 0.2s;
       font-family: inherit;
+      min-height: 42px;
     }
     .select-input:focus, .text-input:focus { border-color: var(--accent-blue); }
     
+    /* Dedicated Path & Mobile Storage Card */
+    .dest-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .dest-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .dest-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dest-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .btn-preset {
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-preset:hover {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .dest-input-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .dest-input {
+      flex: 1;
+      min-width: 240px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      background: #070a12;
+      border: 1px solid #334155;
+    }
+    .dest-help {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .dest-help strong { color: #f8fafc; }
+
+    /* Action Buttons */
     .btn {
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 10px;
       font-size: 14px;
       font-weight: 600;
@@ -450,11 +680,15 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       font-family: inherit;
+      min-height: 42px;
     }
     .btn-primary { background: var(--accent-blue); color: white; }
     .btn-primary:hover { background: var(--accent-blue-hover); transform: translateY(-1px); }
+    .btn-zip { background: var(--accent-purple); color: white; }
+    .btn-zip:hover { background: #7c3aed; transform: translateY(-1px); }
     .btn-scan { background: #334155; color: #f8fafc; }
     .btn-scan:hover { background: #475569; }
     .btn-pause { background: #d97706; color: white; }
@@ -487,6 +721,8 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       justify-content: space-between;
       font-size: 13px;
       color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     /* Tabs */
@@ -495,18 +731,21 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       gap: 8px;
       border-bottom: 1px solid var(--border-color);
       margin-bottom: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .tab-btn {
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
-      padding: 12px 20px;
+      padding: 12px 16px;
       cursor: pointer;
       border-bottom: 2px solid transparent;
       transition: all 0.2s;
       font-family: inherit;
+      white-space: nowrap;
     }
     .tab-btn.active {
       color: #38bdf8;
@@ -519,41 +758,68 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       border: 1px solid var(--border-color);
       border-radius: 16px;
       overflow-x: auto;
-      max-height: 520px;
+      max-height: 540px;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 13px;
       text-align: left;
+      min-width: 650px;
     }
     th {
       background: #1e293b;
-      padding: 14px 18px;
+      padding: 12px 14px;
       font-weight: 600;
       color: #cbd5e1;
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
       z-index: 10;
+      white-space: nowrap;
     }
     td {
-      padding: 12px 18px;
+      padding: 12px 14px;
       border-bottom: 1px solid #1e293b;
       color: #e2e8f0;
+      vertical-align: middle;
     }
     tr:hover td { background: var(--bg-card-hover); }
     .badge-status {
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
     }
     .status-verified { background: rgba(16, 185, 129, 0.2); color: #34d399; }
     .status-downloading { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     .status-completed { background: rgba(16, 185, 129, 0.25); color: #10b981; }
     .status-failed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
     .status-ambiguous { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+    /* Action buttons in table */
+    .btn-table-dl {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid var(--accent-blue);
+      color: #60a5fa;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-table-dl:hover {
+      background: var(--accent-blue);
+      color: #ffffff;
+    }
 
     /* Log Terminal */
     .log-box {
@@ -562,12 +828,31 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       border-radius: 14px;
       padding: 16px;
       font-family: 'JetBrains Mono', Consolas, monospace;
-      font-size: 13px;
+      font-size: 12px;
       color: #38bdf8;
-      height: 480px;
+      height: 440px;
       overflow-y: auto;
       white-space: pre-wrap;
       line-height: 1.6;
+    }
+
+    /* Responsive Design for Mobile Viewports */
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .header-card { padding: 16px; }
+      .header-title h1 { font-size: 18px; }
+      .header-notice { font-size: 12px; }
+      .controls-card { padding: 14px; }
+      .form-row { flex-direction: column; align-items: stretch; gap: 12px; }
+      .checkbox-group { width: 100%; justify-content: flex-start; }
+      .select-input, .text-input { width: 100%; }
+      .dest-input-wrap { flex-direction: column; align-items: stretch; }
+      .dest-input { width: 100%; }
+      .btn { width: 100%; }
+      .btn-scan, .btn-primary, .btn-zip { width: 100%; }
+      .actions-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+      .table-wrapper { max-height: 450px; }
+      .log-box { height: 350px; font-size: 11px; }
     }
   </style>
 </head>
@@ -599,16 +884,16 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
           <label class="custom-checkbox"><input type="checkbox" name="class" value="10"> Class 10</label>
           <label class="custom-checkbox"><input type="checkbox" name="class" value="11"> Class 11</label>
           <label class="custom-checkbox"><input type="checkbox" name="class" value="12"> Class 12</label>
-          <button type="button" class="btn btn-scan" onclick="selectAllClasses(true)" style="padding: 6px 12px; font-size: 12px;">Select All</button>
-          <button type="button" class="btn btn-scan" onclick="selectAllClasses(false)" style="padding: 6px 12px; font-size: 12px;">Clear</button>
+          <button type="button" class="btn btn-scan" onclick="selectAllClasses(true)" style="padding: 6px 12px; font-size: 12px; min-height: 36px;">Select All</button>
+          <button type="button" class="btn btn-scan" onclick="selectAllClasses(false)" style="padding: 6px 12px; font-size: 12px; min-height: 36px;">Clear</button>
         </div>
       </div>
 
       <!-- Filters Row -->
       <div class="form-row">
-        <div>
+        <div style="flex: 1; min-width: 140px;">
           <span class="label-heading">Term:</span>
-          <select id="termSelect" class="select-input">
+          <select id="termSelect" class="select-input" style="width: 100%;">
             <option value="All Terms">All Terms</option>
             <option value="Term 1">Term 1</option>
             <option value="Term 2">Term 2</option>
@@ -617,9 +902,9 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
           </select>
         </div>
 
-        <div>
+        <div style="flex: 1; min-width: 160px;">
           <span class="label-heading">Edition:</span>
-          <select id="editionSelect" class="select-input">
+          <select id="editionSelect" class="select-input" style="width: 100%;">
             <option value="All Editions">All Editions</option>
             <option value="2024-25 Edition">2024-25 Edition</option>
             <option value="2022-23 Edition">2022-23 Edition</option>
@@ -627,20 +912,40 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
             <option value="Old Edition">Old Edition</option>
           </select>
         </div>
+      </div>
 
-        <div style="flex-grow: 1;">
-          <span class="label-heading">Save Folder:</span>
-          <input type="text" id="destInput" class="text-input" style="width: 100%;" value="""" + DEFAULT_DOWNLOAD_DIR.replace("\\", "/") + """">
+      <!-- Dedicated Download Path & Mobile Preset Card -->
+      <div class="dest-card">
+        <div class="dest-header">
+          <span class="dest-title">📁 Download Destination & Mobile Storage</span>
+          <span id="platformBadge" style="font-size: 11px; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 3px 8px; border-radius: 6px;">Ready</span>
+        </div>
+        <div class="dest-presets">
+          <span class="preset-label" style="font-size: 12px; color: var(--text-muted);">Quick Presets:</span>
+          <button type="button" class="btn-preset" onclick="setPreset('mobile')">📱 Phone Downloads</button>
+          <button type="button" class="btn-preset" onclick="setPreset('project')">📁 Project Folder</button>
+          <button type="button" class="btn-preset" onclick="setPreset('custom')">📂 Custom Folder</button>
+        </div>
+        <div class="dest-input-wrap">
+          <input type="text" id="destInput" class="text-input dest-input" value="__DEFAULT_DIR__">
+        </div>
+        <div class="dest-help">
+          💡 <strong>Mobile Tip:</strong> On phone browsers, tap <strong>"⬇ Save to Phone"</strong> on any book row to download directly into your mobile phone's Downloads folder, or tap <strong>"📦 Download All (ZIP)"</strong> below!
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="form-row" style="margin-top: 10px;">
-        <button id="btnScan" class="btn btn-scan" onclick="triggerScan()">🔍 Scan Tamil Textbooks</button>
-        <button id="btnDownload" class="btn btn-primary" onclick="triggerDownload()" disabled>⬇ Download All Verified Books</button>
-        <button id="btnPause" class="btn btn-pause" onclick="togglePause()" style="display: none;">⏸ Pause</button>
-        <button id="btnCancel" class="btn btn-cancel" onclick="triggerCancel()" style="display: none;">⏹ Cancel</button>
-        <span id="lblStatus" style="font-size: 14px; color: var(--text-muted); margin-left: auto;">Ready. Click 'Scan Tamil Textbooks'.</span>
+      <!-- Action Buttons Row -->
+      <div class="actions-container">
+        <div class="form-row" style="margin-top: 10px;">
+          <button id="btnScan" class="btn btn-scan" onclick="triggerScan()">🔍 Scan Tamil Textbooks</button>
+          <button id="btnDownload" class="btn btn-primary" onclick="triggerDownload()" disabled>⬇ Download All to Storage</button>
+          <button id="btnZip" class="btn btn-zip" onclick="triggerDownloadZip()" disabled>📦 Download All (ZIP to Phone)</button>
+          <button id="btnPause" class="btn btn-pause" onclick="togglePause()" style="display: none;">⏸ Pause</button>
+          <button id="btnCancel" class="btn btn-cancel" onclick="triggerCancel()" style="display: none;">⏹ Cancel</button>
+        </div>
+        <div style="margin-top: 6px;">
+          <span id="lblStatus" style="font-size: 13px; color: var(--text-muted);">Ready. Click 'Scan Tamil Textbooks' to start.</span>
+        </div>
       </div>
 
       <!-- Live Progress Bar -->
@@ -661,9 +966,9 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
 
     <!-- Tabs Container -->
     <div class="tabs-header">
-      <button class="tab-btn active" onclick="switchTab('tab-books')">Verified Tamil Medium Books (<span id="countBooks">0</span>)</button>
-      <button class="tab-btn" onclick="switchTab('tab-logs')">Real-Time Download Log</button>
-      <button class="tab-btn" onclick="switchTab('tab-amb')">Ambiguous / Skipped (<span id="countAmb">0</span>)</button>
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-books')">Verified Tamil Medium Books (<span id="countBooks">0</span>)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-logs')">Real-Time Download Log</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-amb')">Ambiguous / Skipped (<span id="countAmb">0</span>)</button>
     </div>
 
     <!-- TAB 1: Books Table -->
@@ -674,14 +979,15 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
             <th>Class</th>
             <th>Edition</th>
             <th>Term</th>
-            <th>Subject (English)</th>
+            <th>Subject</th>
             <th>Tamil Title</th>
             <th>Status</th>
-            <th>Link</th>
+            <th>Direct Download</th>
+            <th>Source</th>
           </tr>
         </thead>
         <tbody id="booksTbody">
-          <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Click "Scan Tamil Textbooks" to discover books.</td></tr>
+          <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Click "Scan Tamil Textbooks" to discover books.</td></tr>
         </tbody>
       </table>
     </div>
@@ -701,7 +1007,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
             <th>Term</th>
             <th>Subject</th>
             <th>Reason Skipped</th>
-            <th>Link</th>
+            <th>Source</th>
           </tr>
         </thead>
         <tbody id="ambTbody">
@@ -715,15 +1021,50 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
   <script>
     let pollInterval = null;
     let isPaused = false;
+    let systemInfo = {
+      is_android: false,
+      default_dest: '',
+      mobile_download_path: '/storage/emulated/0/Download/Tamil_Medium',
+      project_download_path: 'downloads/Tamil_Medium'
+    };
+
+    async function loadSystemInfo() {
+      try {
+        const res = await fetch('/api/system_info');
+        systemInfo = await res.json();
+        if (systemInfo.is_android) {
+          document.getElementById('platformBadge').innerText = "📱 Android Detected";
+          document.getElementById('destInput').value = systemInfo.mobile_download_path;
+        } else {
+          document.getElementById('platformBadge').innerText = "💻 Desktop / Server Host";
+        }
+      } catch (err) {
+        console.warn("Could not load system info:", err);
+      }
+    }
+
+    function setPreset(type) {
+      const input = document.getElementById('destInput');
+      if (type === 'mobile') {
+        input.value = systemInfo.mobile_download_path || '/storage/emulated/0/Download/Tamil_Medium';
+      } else if (type === 'project') {
+        input.value = systemInfo.project_download_path || 'downloads/Tamil_Medium';
+      } else if (type === 'custom') {
+        const val = prompt("Enter target directory path:", input.value);
+        if (val && val.trim()) input.value = val.trim();
+      }
+    }
 
     function selectAllClasses(checked) {
       document.querySelectorAll('input[name="class"]').forEach(cb => cb.checked = checked);
     }
 
-    function switchTab(tabId) {
+    function switchTab(evt, tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-      event.target.classList.add('active');
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
       document.getElementById(tabId).style.display = 'block';
     }
 
@@ -738,6 +1079,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
 
       document.getElementById('btnScan').disabled = true;
       document.getElementById('btnDownload').disabled = true;
+      document.getElementById('btnZip').disabled = true;
       document.getElementById('lblStatus').innerText = "Scanning Tamil textbooks...";
 
       await fetch('/api/scan', {
@@ -754,9 +1096,10 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       const term = document.getElementById('termSelect').value;
       const edition = document.getElementById('editionSelect').value;
 
-      if (!confirm("Start downloading verified Tamil Medium textbooks?")) return;
+      if (!confirm("Start downloading verified Tamil Medium textbooks to storage folder?\\nPath: " + dest)) return;
 
       document.getElementById('btnDownload').disabled = true;
+      document.getElementById('btnZip').disabled = true;
       document.getElementById('btnScan').disabled = true;
       document.getElementById('btnPause').style.display = 'inline-flex';
       document.getElementById('btnCancel').style.display = 'inline-flex';
@@ -769,6 +1112,11 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       });
 
       startPolling();
+    }
+
+    function triggerDownloadZip() {
+      if (!confirm("Download all verified Tamil Medium books as a single ZIP directly to your device?")) return;
+      window.location.href = '/api/download_zip';
     }
 
     async function togglePause() {
@@ -808,19 +1156,30 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         // Render Books Table
         if (data.discovered_books.length > 0) {
           const tbody = document.getElementById('booksTbody');
-          tbody.innerHTML = data.discovered_books.map(b => `
-            <tr>
-              <td style="text-align: center; font-weight: 600;">${b.class_num}</td>
-              <td>${b.edition}</td>
-              <td style="text-align: center;">${b.term}</td>
-              <td style="font-weight: 500;">${b.subject_display}</td>
-              <td style="color: #6ee7b7;">${b.tamil_title}</td>
-              <td><span class="badge-status ${getStatusClass(b.status)}">${b.status}</span></td>
-              <td><a href="${b.download_url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">Link</a></td>
-            </tr>
-          `).join('');
+          tbody.innerHTML = data.discovered_books.map(b => {
+            const safeName = `${b.class_num}th_Tamil_Medium_${b.subject_display.replace(/[^a-zA-Z0-9_-]/g, '_')}_${b.term.replace(/\\s+/g, '_')}.pdf`;
+            const directDlUrl = `/api/direct_download?url=${encodeURIComponent(b.download_url)}&name=${encodeURIComponent(safeName)}`;
+            return `
+              <tr>
+                <td style="text-align: center; font-weight: 600;">${b.class_num}</td>
+                <td>${b.edition}</td>
+                <td style="text-align: center;">${b.term}</td>
+                <td style="font-weight: 500;">${b.subject_display}</td>
+                <td style="color: #6ee7b7;">${b.tamil_title}</td>
+                <td><span class="badge-status ${getStatusClass(b.status)}">${b.status}</span></td>
+                <td>
+                  <a href="${directDlUrl}" class="btn-table-dl" download="${safeName}">
+                    ⬇ Save to Phone
+                  </a>
+                </td>
+                <td><a href="${b.download_url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">🔗 Drive Link</a></td>
+              </tr>
+            `;
+          }).join('');
+
           if (!data.is_downloading && !data.is_scanning) {
             document.getElementById('btnDownload').disabled = false;
+            document.getElementById('btnZip').disabled = false;
           }
         }
 
@@ -834,7 +1193,7 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
               <td>${b.term}</td>
               <td>${b.subject_display}</td>
               <td style="color: #fbbf24;">${b.notes}</td>
-              <td><a href="${b.download_url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">Link</a></td>
+              <td><a href="${b.download_url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">🔗 Drive Link</a></td>
             </tr>
           `).join('');
         }
@@ -882,12 +1241,13 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
       return 'status-verified';
     }
 
-    // Auto poll once on load
+    // Auto load system info and poll on start
+    loadSystemInfo();
     pollStatus();
   </script>
 </body>
 </html>
-"""
+""".replace("__DEFAULT_DIR__", default_dir)
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(html_content.encode("utf-8"))))
@@ -895,17 +1255,29 @@ class TextbookWebHandler(BaseHTTPRequestHandler):
         self.wfile.write(html_content.encode("utf-8"))
 
 
-def start_web_server(port: int = 5000, open_browser: bool = True):
-    server = ThreadingHTTPServer(("127.0.0.1", port), TextbookWebHandler)
-    url = f"http://127.0.0.1:{port}"
-    print(f"\n=======================================================")
-    print(f" TAMIL MEDIUM TEXTBOOKS AUTO-DOWNLOADER (WEB GUI)")
-    print(f" Web Application running at: {url}")
-    print(f" Notice: Only Tamil Medium textbooks will be downloaded.")
-    print(f"=======================================================\n")
+def start_web_server(port: int = None, open_browser: bool = True):
+    if port is None:
+        port = int(os.environ.get("PORT", 5000))
+    host = os.environ.get("HOST", "0.0.0.0")
+
+    server = ThreadingHTTPServer((host, port), TextbookWebHandler)
+    local_ip = get_local_ip()
+    url_local = f"http://localhost:{port}"
+    url_mobile = f"http://{local_ip}:{port}"
+
+    print(f"\n==================================================================")
+    print(f"  TAMIL NADU SCHOOL TEXTBOOKS AUTO-DOWNLOADER (TAMIL MEDIUM ONLY)")
+    print(f"==================================================================")
+    print(f"  * Desktop / Local Browser : {url_local}")
+    print(f"  * Mobile Browser on Wi-Fi : {url_mobile}")
+    print(f"------------------------------------------------------------------")
+    print(f"  [Mobile Access]:")
+    print(f"     Open '{url_mobile}' in your mobile phone browser (Chrome/Safari)")
+    print(f"     to scan and download Tamil Medium textbooks directly to your phone!")
+    print(f"==================================================================\n")
 
     if open_browser:
-        threading.Thread(target=lambda: (time.sleep(1), webbrowser.open(url)), daemon=True).start()
+        threading.Thread(target=lambda: (time.sleep(1), webbrowser.open(url_local)), daemon=True).start()
 
     try:
         server.serve_forever()

@@ -193,6 +193,64 @@ class TestTamilMediumValidator(unittest.TestCase):
         self.assertFalse(val.is_valid)
         self.assertFalse(val.step_results["valid_pdf"])
 
+    def test_final_validation_edition_year_matching(self):
+        # Scenario that previously failed: "2024-25 Edition" vs "Latest Edition (2024-25)"
+        ctx = MediumContext(
+            class_num=8,
+            edition="Latest Edition (2024-25)",
+            medium="Tamil",
+            term="Full Book",
+            table_header="8th Tamil Medium Books",
+        )
+        res = TextbookResource(
+            class_num=8,
+            edition="Latest Edition (2024-25)",
+            term="Full Book",
+            subject_raw="தமிழ்",
+            subject_display="Tamil",
+            tamil_title="தமிழ்",
+            download_url="https://example.com/8th_tamil.pdf",
+            source_page="https://example.com",
+            context=ctx,
+        )
+        valid_header = b"%PDF-1.5"
+        val = validate_final(
+            resource=res,
+            downloaded_header=valid_header,
+            expected_class=8,
+            expected_edition="2024-25 Edition",
+        )
+        self.assertTrue(val.is_valid)
+        self.assertTrue(val.step_results["edition"])
+
+    def test_final_validation_term_variations(self):
+        ctx = MediumContext(
+            class_num=8,
+            edition="2024-25 Edition",
+            medium="Tamil",
+            term="Term 1",
+            table_header="8th Tamil Medium Books - Term I",
+        )
+        res = TextbookResource(
+            class_num=8,
+            edition="2024-25 Edition",
+            term="Term 1",
+            subject_raw="கணிதம்",
+            subject_display="Mathematics",
+            tamil_title="கணிதம்",
+            download_url="https://example.com/8th_maths.pdf",
+            source_page="https://example.com",
+            context=ctx,
+        )
+        valid_header = b"%PDF-1.4"
+        val = validate_final(
+            resource=res,
+            downloaded_header=valid_header,
+            expected_term="Term 1",
+        )
+        self.assertTrue(val.is_valid)
+        self.assertTrue(val.step_results["term"])
+
     def test_required_log_format(self):
         ctx = MediumContext(class_num=8, edition="2019 Edition", medium="Tamil", term="Term 1")
         res = TextbookResource(

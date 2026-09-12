@@ -2,6 +2,7 @@
 Validation module enforcing strict Tamil Medium constraints and 6-point pre-save checks.
 """
 
+import re
 import logging
 from typing import Optional, Callable
 from models import TextbookResource, MediumStatus, ValidationResult
@@ -150,7 +151,19 @@ def validate_final(
 
     # 2. Correct edition check
     if expected_edition is not None and expected_edition != "All Editions":
-        checks["edition"] = expected_edition.lower() in resource.edition.lower()
+        exp_lower = expected_edition.lower()
+        res_lower = (resource.edition or "").lower()
+        if exp_lower in res_lower or res_lower in exp_lower:
+            checks["edition"] = True
+        else:
+            exp_years = set(re.findall(r"\d{4}", exp_lower))
+            res_years = set(re.findall(r"\d{4}", res_lower))
+            if exp_years and (exp_years & res_years):
+                checks["edition"] = True
+            elif "old" in exp_lower and "old" in res_lower:
+                checks["edition"] = True
+            else:
+                checks["edition"] = False
     else:
         checks["edition"] = bool(resource.edition and resource.edition.strip())
 
@@ -159,9 +172,18 @@ def validate_final(
 
     # 4. Correct term check
     if expected_term is not None and expected_term != "All Terms":
-        clean_exp = expected_term.replace("Term ", "").strip().lower()
-        clean_res = resource.term.replace("Term ", "").strip().lower()
-        checks["term"] = (clean_exp in clean_res) or (resource.term == "Full Book")
+        clean_exp = expected_term.replace("Term ", "").replace("Term-", "").strip().lower()
+        clean_res = (resource.term or "").replace("Term ", "").replace("Term-", "").strip().lower()
+        roman_map = {"1": "i", "2": "ii", "3": "iii"}
+        clean_exp_roman = roman_map.get(clean_exp, clean_exp)
+        clean_res_roman = roman_map.get(clean_res, clean_res)
+
+        checks["term"] = (
+            (clean_exp in clean_res)
+            or (clean_exp_roman in clean_res_roman)
+            or (clean_exp == "full book" and clean_res == "full book")
+            or (resource.term == "Full Book")
+        )
     else:
         checks["term"] = bool(resource.term and resource.term.strip())
 

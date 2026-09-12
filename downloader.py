@@ -88,20 +88,88 @@ class TamilTextbookDownloader:
         """
         Creates hierarchical target directory:
         downloads/Tamil_Medium/Class_<N>/<Term_or_Edition>/<Subject>.pdf
+        With automatic fallback to a safe writable location if the chosen path fails.
         """
-        # Safe directory names
         class_folder = f"Class_{resource.class_num}"
         term_clean = resource.term.replace(" ", "_") if resource.term else "Full_Book"
-        edition_clean = re.sub(r"[^\w\s-]", "", resource.edition).strip().replace(" ", "_")
+        edition_clean = re.sub(r"[^\w\s-]", "", resource.edition or "Latest").strip().replace(" ", "_")
         sub_folder = f"{edition_clean}_{term_clean}"
 
         target_dir = self.download_dir / class_folder / sub_folder
-        target_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            # Test writability
+            test_file = target_dir / ".write_test"
+            test_file.touch(exist_ok=True)
+            test_file.unlink(missing_ok=True)
+        except Exception as e:
+            # Fallback to local user downloads or project downloads directory
+            fallback_dir = Path.home() / "Downloads" / "Tamil_Medium"
+            try:
+                fallback_dir.mkdir(parents=True, exist_ok=True)
+            except Exception:
+                fallback_dir = (Path(__file__).parent / "downloads" / "Tamil_Medium").resolve()
+                fallback_dir.mkdir(parents=True, exist_ok=True)
+            self.log(f"[WARNING] Cannot write to {target_dir} ({e}). Falling back to {fallback_dir}")
+            target_dir = fallback_dir / class_folder / sub_folder
+            target_dir.mkdir(parents=True, exist_ok=True)
 
         # Sanitize filename
         safe_subject = re.sub(r'[\\/*?:"<>|]', "", resource.subject_display).strip()
         filename = f"{resource.class_num}th_Tamil_Medium_{safe_subject}_{term_clean}.pdf"
         return target_dir / filename
+
+    def open_download_stream(self, direct_url: str):
+        """
+        Opens a download stream, handling Google Drive confirmation forms,
+        tokens, uuid parameters, and usercontent redirects.
+        """
+        req = urllib.request.Request(direct_url, headers=DEFAULT_HEADERS)
+        resp = self.opener.open(req, timeout=35)
+        content_type = resp.headers.get("Content-Type", "").lower()
+
+        if "text/html" in content_type:
+            html_text = resp.read().decode("utf-8", errors="ignore")
+
+            # Check for form in Google Drive
+            form_match = re.search(r'<form[^>]+id="download-form"[^>]+action="([^"]+)"[^>]*>(.*?)</form>', html_text, re.I | re.S)
+            if not form_match:
+                form_match = re.search(r'<form[^>]+action="([^"]+)"[^>]*>(.*?)</form>', html_text, re.I | re.S)
+
+            if form_match:
+                action_url = form_match.group(1)
+                form_body = form_match.group(2)
+                inputs = re.findall(r'<input[^>]+name="([^"]+)"[^>]+value="([^"]*)"', form_body, re.I)
+                if not inputs:
+                    inputs = re.findall(r'<input[^>]+value="([^"]*)"[^>]+name="([^"]+)"', form_body, re.I)
+                    inputs = [(name, val) for val, name in inputs]
+                form_params = dict(inputs)
+                if form_params:
+                    if not action_url.startswith("http"):
+                        action_url = urllib.parse.urljoin(direct_url, action_url)
+                    query_str = urllib.parse.urlencode(form_params)
+                    confirm_url = f"{action_url}?{query_str}"
+                    req2 = urllib.request.Request(confirm_url, headers=DEFAULT_HEADERS)
+                    return self.opener.open(req2, timeout=35)
+
+            # Fallback to confirm token match
+            confirm_token = None
+            token_match = re.search(r"confirm=([0-9A-Za-z_-]+)", html_text)
+            if token_match:
+                confirm_token = token_match.group(1)
+            elif "confirm=" in html_text:
+                token_match2 = re.search(r'name="confirm"\s+value="([^"]+)"', html_text)
+                if token_match2:
+                    confirm_token = token_match2.group(1)
+
+            if confirm_token:
+                uuid_match = re.search(r"uuid=([0-9A-Za-z_-]+)", html_text)
+                extra = f"&uuid={uuid_match.group(1)}" if uuid_match else ""
+                confirm_url = f"{direct_url}&confirm={confirm_token}{extra}"
+                req2 = urllib.request.Request(confirm_url, headers=DEFAULT_HEADERS)
+                return self.opener.open(req2, timeout=35)
+
+        return resp
 
     def download_resource(
         self,
@@ -127,35 +195,7 @@ class TamilTextbookDownloader:
         direct_url = self.resolve_download_url(resource.download_url)
 
         try:
-            req = urllib.request.Request(direct_url, headers=DEFAULT_HEADERS)
-            resp = self.opener.open(req, timeout=30)
-
-            # Handle Google Drive large file confirmation page
-            content_type = resp.headers.get("Content-Type", "").lower()
-            resp_body = b""
-            if "text/html" in content_type:
-                html_text = resp.read().decode("utf-8", errors="ignore")
-                # Check for confirm token
-                confirm_token = None
-                token_match = re.search(r"confirm=([0-9A-Za-z_]+)", html_text)
-                if token_match:
-                    confirm_token = token_match.group(1)
-                elif "confirm=" in html_text:
-                    token_match2 = re.search(r'name="confirm"\s+value="([^"]+)"', html_text)
-                    if token_match2:
-                        confirm_token = token_match2.group(1)
-
-                if confirm_token:
-                    confirm_url = f"{direct_url}&confirm={confirm_token}"
-                    req2 = urllib.request.Request(confirm_url, headers=DEFAULT_HEADERS)
-                    resp = self.opener.open(req2, timeout=30)
-                else:
-                    # Not a downloadable stream
-                    self.log(f"[ERROR] Could not obtain direct download stream from: {direct_url}")
-                    self.log(resource.format_log_block(status="Failed (HTML received instead of PDF)"))
-                    if self.on_file_complete:
-                        self.on_file_complete(resource, "", "Failed")
-                    return False
+            resp = self.open_download_stream(direct_url)
 
             # Read first chunk to inspect magic bytes (%PDF-)
             first_chunk = resp.read(2048)
