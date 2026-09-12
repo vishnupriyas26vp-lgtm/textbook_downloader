@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tamil Nadu School Textbooks Auto-Downloader (Tamil Medium Only)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #151d30;
+      --bg-card-hover: #1c263f;
+      --border-color: #24304d;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-green: #10b981;
+      --accent-green-dark: #064e3b;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-purple: #8b5cf6;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header Card */
+    .header-card {
+      background: linear-gradient(135deg, #151d30 0%, #1e293b 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .header-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .header-notice {
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-medium {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--accent-green);
+      color: #34d399;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+    .badge-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Controls Card */
+    .controls-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .form-row:last-child { margin-bottom: 0; }
+    
+    .label-heading {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+    .checkbox-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .custom-checkbox {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      min-height: 40px;
+    }
+    .custom-checkbox:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
+    .custom-checkbox input { accent-color: var(--accent-green); cursor: pointer; width: 16px; height: 16px; }
+
+    .select-input, .text-input {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      min-height: 42px;
+    }
+    .select-input:focus, .text-input:focus { border-color: var(--accent-blue); }
+    
+    /* Dedicated Path & Mobile Storage Card */
+    .dest-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .dest-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .dest-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dest-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .btn-preset {
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-preset:hover {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .dest-input-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .dest-input {
+      flex: 1;
+      min-width: 240px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      background: #070a12;
+      border: 1px solid #334155;
+      color: #6ee7b7;
+    }
+    .dest-help {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .dest-help strong { color: #f8fafc; }
+
+    /* Action Buttons */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      min-height: 42px;
+    }
+    .btn-primary { background: var(--accent-blue); color: white; }
+    .btn-primary:hover { background: var(--accent-blue-hover); transform: translateY(-1px); }
+    .btn-scan { background: #334155; color: #f8fafc; }
+    .btn-scan:hover { background: #475569; }
+    .btn-cancel { background: var(--accent-red); color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Progress section */
+    .progress-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: #0d1322;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    .progress-bar-bg {
+      height: 10px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* Tabs */
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+
+    /* Table */
+    .table-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow-x: auto;
+      max-height: 540px;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+      min-width: 650px;
+    }
+    th {
+      background: #1e293b;
+      padding: 12px 14px;
+      font-weight: 600;
+      color: #cbd5e1;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+    tr:hover td { background: var(--bg-card-hover); }
+    .badge-status {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .status-verified { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-downloading { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-completed { background: rgba(16, 185, 129, 0.25); color: #10b981; }
+    .status-failed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .status-ambiguous { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+    /* Action buttons in table */
+    .btn-table-dl {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid var(--accent-blue);
+      color: #60a5fa;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-table-dl:hover {
+      background: var(--accent-blue);
+      color: #ffffff;
+    }
+
+    /* Log Terminal */
+    .log-box {
+      background: #070a12;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      color: #38bdf8;
+      height: 440px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    /* Responsive Design for Mobile Viewports */
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .header-card { padding: 16px; }
+      .header-title h1 { font-size: 18px; }
+      .header-notice { font-size: 12px; }
+      .controls-card { padding: 14px; }
+      .form-row { flex-direction: column; align-items: stretch; gap: 12px; }
+      .checkbox-group { width: 100%; justify-content: flex-start; }
+      .select-input, .text-input { width: 100%; }
+      .dest-input-wrap { flex-direction: column; align-items: stretch; }
+      .dest-input { width: 100%; }
+      .btn { width: 100%; }
+      .btn-scan, .btn-primary { width: 100%; }
+      .actions-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+      .table-wrapper { max-height: 450px; }
+      .log-box { height: 350px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Top Header -->
+    <div class="header-card">
+      <div class="header-title">
+        <h1>Tamil Nadu School Textbooks Auto-Downloader</h1>
+        <div class="header-notice">
+          ⚠️ Notice: Only Tamil Medium textbooks will be downloaded. English Medium textbooks are strictly excluded.
+        </div>
+      </div>
+      <div class="badge-medium">
+        <span class="badge-dot"></span>
+        Tamil Medium Only
+      </div>
+    </div>
+
+    <!-- Control Center -->
+    <div class="controls-card">
+      <!-- Classes Row -->
+      <div class="form-row">
+        <span class="label-heading">Select Classes:</span>
+        <div class="checkbox-group">
+          <label class="custom-checkbox"><input type="checkbox" name="class" value="8" checked> Class 8</label>
+          <label class="custom-checkbox"><input type="checkbox" name="class" value="9"> Class 9</label>
+          <label class="custom-checkbox"><input type="checkbox" name="class" value="10"> Class 10</label>
+          <label class="custom-checkbox"><input type="checkbox" name="class" value="11"> Class 11</label>
+          <label class="custom-checkbox"><input type="checkbox" name="class" value="12"> Class 12</label>
+          <button type="button" class="btn btn-scan" onclick="selectAllClasses(true)" style="padding: 6px 12px; font-size: 12px; min-height: 36px;">Select All</button>
+          <button type="button" class="btn btn-scan" onclick="selectAllClasses(false)" style="padding: 6px 12px; font-size: 12px; min-height: 36px;">Clear</button>
+        </div>
+      </div>
+
+      <!-- Filters Row -->
+      <div class="form-row">
+        <div style="flex: 1; min-width: 140px;">
+          <span class="label-heading">Term:</span>
+          <select id="termSelect" class="select-input" style="width: 100%;">
+            <option value="All Terms">All Terms</option>
+            <option value="Term 1">Term 1</option>
+            <option value="Term 2">Term 2</option>
+            <option value="Term 3">Term 3</option>
+            <option value="Full Book">Full Book</option>
+          </select>
+        </div>
+
+        <div style="flex: 1; min-width: 160px;">
+          <span class="label-heading">Edition:</span>
+          <select id="editionSelect" class="select-input" style="width: 100%;">
+            <option value="All Editions">All Editions</option>
+            <option value="2024-25 Edition">2024-25 Edition</option>
+            <option value="2022-23 Edition">2022-23 Edition</option>
+            <option value="2019 Edition">2019 Edition</option>
+            <option value="Old Edition">Old Edition</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dedicated Download Path & Mobile Storage Card -->
+      <div class="dest-card">
+        <div class="dest-header">
+          <span class="dest-title">📁 Download Destination & Mobile Storage</span>
+          <span id="platformBadge" style="font-size: 11px; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 3px 8px; border-radius: 6px;">📱 Mobile Downloads Active</span>
+        </div>
+        <div class="dest-presets">
+          <span class="preset-label" style="font-size: 12px; color: var(--text-muted);">Storage Presets:</span>
+          <button type="button" class="btn-preset" onclick="setPreset('mobile')">📱 Phone Downloads</button>
+          <button type="button" class="btn-preset" onclick="setPreset('sdcard')">💾 SD Card / Internal</button>
+          <button type="button" class="btn-preset" onclick="setPreset('custom')">📂 Custom Folder</button>
+        </div>
+        <div class="dest-input-wrap">
+          <input type="text" id="destInput" class="text-input dest-input" value="📱 Phone Storage > Downloads (Direct Download)" readonly>
+        </div>
+        <div class="dest-help">
+          💡 <strong>Mobile Storage Notice:</strong> On mobile devices, downloaded textbooks are saved directly into your phone's <strong>Downloads</strong> folder (`/storage/emulated/0/Download`). Tapping <strong>"⬇ Save to Phone"</strong> or <strong>"⬇ Download All Verified Books"</strong> triggers direct browser downloads without permission or HTTP 403 errors!
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="actions-container">
+        <div class="form-row" style="margin-top: 10px;">
+          <button id="btnScan" class="btn btn-scan" onclick="triggerScan()">🔍 Scan Tamil Textbooks</button>
+          <button id="btnDownload" class="btn btn-primary" onclick="triggerDownloadAll()" disabled>⬇ Download All Verified Books</button>
+          <button id="btnCancel" class="btn btn-cancel" onclick="triggerCancel()" style="display: none;">⏹ Cancel</button>
+        </div>
+        <div style="margin-top: 6px;">
+          <span id="lblStatus" style="font-size: 13px; color: var(--text-muted);">Ready. Click 'Scan Tamil Textbooks' to start.</span>
+        </div>
+      </div>
+
+      <!-- Live Progress Bar -->
+      <div id="progressBox" class="progress-box" style="display: none;">
+        <div class="progress-meta">
+          <span id="lblProgressBook">Downloading...</span>
+          <span id="lblProgressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="lblOverallCount">0 / 0 completed</span>
+          <span id="lblStatusCount"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Container -->
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-books')">Verified Tamil Medium Books (<span id="countBooks">0</span>)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-logs')">Real-Time Download Log</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-amb')">Ambiguous / Skipped (0)</button>
+    </div>
+
+    <!-- TAB 1: Books Table -->
+    <div id="tab-books" class="tab-content table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Edition</th>
+            <th>Term</th>
+            <th>Subject</th>
+            <th>Tamil Title</th>
+            <th>Status</th>
+            <th>Direct Download</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="booksTbody">
+          <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Click "Scan Tamil Textbooks" to discover books.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 2: Logs Viewer -->
+    <div id="tab-logs" class="tab-content" style="display: none;">
+      <div id="logViewer" class="log-box">Waiting for activity...</div>
+    </div>
+
+    <!-- TAB 3: Ambiguous Resources -->
+    <div id="tab-amb" class="tab-content table-wrapper" style="display: none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Edition</th>
+            <th>Term</th>
+            <th>Subject</th>
+            <th>Reason Skipped</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="ambTbody">
+          <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No ambiguous resources skipped.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Load Embedded Verified Catalog -->
+  <script src="catalog.js"></script>
+
+  <script>
+    let discovered_books = [];
+    let is_downloading = false;
+    let cancel_requested = false;
+    let logs = [];
+
+    function addLog(msg) {
+      logs.push(msg);
+      if (logs.length > 1000) logs.shift();
+      const viewer = document.getElementById('logViewer');
+      viewer.innerText = logs.join('\\n');
+      viewer.scrollTop = viewer.scrollHeight;
+    }
+
+    function selectAllClasses(checked) {
+      document.querySelectorAll('input[name="class"]').forEach(cb => cb.checked = checked);
+    }
+
+    function switchTab(evt, tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      if (evt && evt.target) evt.target.classList.add('active');
+      document.getElementById(tabId).style.display = 'block';
+    }
+
+    function setPreset(type) {
+      const input = document.getElementById('destInput');
+      if (type === 'mobile') {
+        input.value = '📱 Phone Storage > Downloads (/storage/emulated/0/Download)';
+      } else if (type === 'sdcard') {
+        input.value = '💾 SD Card > Tamil_Medium_Books';
+      } else if (type === 'custom') {
+        const val = prompt("Enter target folder note:", input.value);
+        if (val) input.value = val;
+      }
+    }
+
+    // Resolves Google Drive link to direct download link
+    function getDirectDownloadUrl(rawUrl) {
+      if (!rawUrl) return '';
+      const idMatch = rawUrl.match(/id=([a-zA-Z0-9_-]+)/) || rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (idMatch) {
+        return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+      }
+      return rawUrl;
+    }
+
+    // Direct Browser Download (Prevents HTTP 403 by using native navigation instead of CORS fetch)
+    function downloadBookToPhone(url, fileName, bookDisplayName) {
+      const directUrl = getDirectDownloadUrl(url);
+      addLog(`[INFO]\\nBook: ${bookDisplayName || fileName}\\nStatus: Downloading (Direct to phone)`);
+      
+      const link = document.createElement('a');
+      link.href = directUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      addLog(`[SAVED] Native browser download started for ${fileName}\\nStatus: Completed`);
+    }
+
+    async function triggerScan() {
+      const selectedClasses = Array.from(document.querySelectorAll('input[name="class"]:checked')).map(cb => parseInt(cb.value));
+      if (!selectedClasses.length) {
+        alert("Please select at least one class.");
+        return;
+      }
+      const termFilter = document.getElementById('termSelect').value;
+      const editionFilter = document.getElementById('editionSelect').value;
+
+      document.getElementById('btnScan').disabled = true;
+      document.getElementById('lblStatus').innerText = "Scanning verified Tamil textbooks...";
+      addLog("[SCAN] Initiating scan for verified Tamil Medium school textbooks...");
+
+      // Filter from embedded catalog
+      let results = [];
+      const catalog = (typeof TEXTBOOK_CATALOG !== 'undefined') ? TEXTBOOK_CATALOG : {};
+
+      for (const c of selectedClasses) {
+        const classBooks = catalog[c] || [];
+        for (const b of classBooks) {
+          // Term filter check
+          if (termFilter !== "All Terms") {
+            const expTerm = termFilter.toLowerCase().replace("term ", "").replace("term-", "").trim();
+            const resTerm = (b.term || "").toLowerCase().replace("term ", "").replace("term-", "").trim();
+            if (expTerm !== resTerm && b.term !== "Full Book" && termFilter !== "Full Book") {
+              continue;
+            }
+            if (termFilter === "Full Book" && b.term !== "Full Book") {
+              continue;
+            }
+          }
+
+          // Edition filter check
+          if (editionFilter !== "All Editions") {
+            const expYears = (editionFilter.match(/\\d{4}/g) || []);
+            const resYears = ((b.edition || "").match(/\\d{4}/g) || []);
+            const hasCommonYear = expYears.some(y => resYears.includes(y));
+            if (!hasCommonYear && !editionFilter.toLowerCase().includes("old")) {
+              continue;
+            }
+          }
+
+          results.push(b);
+        }
+      }
+
+      discovered_books = results;
+      document.getElementById('countBooks').innerText = results.length;
+      document.getElementById('btnScan').disabled = false;
+
+      if (results.length > 0) {
+        document.getElementById('btnDownload').disabled = false;
+        document.getElementById('lblStatus').innerText = `Found ${results.length} verified Tamil Medium textbooks.`;
+        addLog(`[SCAN COMPLETE] Found ${results.length} verified Tamil Medium textbooks. Ready to download!`);
+
+        const tbody = document.getElementById('booksTbody');
+        tbody.innerHTML = results.map((b, idx) => {
+          const safeName = `${b.class_num}th_Tamil_Medium_${b.subject_display.replace(/[^a-zA-Z0-9_-]/g, '_')}_${(b.term || 'Full_Book').replace(/\\s+/g, '_')}.pdf`;
+          const directDl = getDirectDownloadUrl(b.download_url);
+          return `
+            <tr>
+              <td style="text-align: center; font-weight: 600;">${b.class_num}</td>
+              <td>${b.edition}</td>
+              <td style="text-align: center;">${b.term}</td>
+              <td style="font-weight: 500;">${b.subject_display}</td>
+              <td style="color: #6ee7b7;">${b.tamil_title}</td>
+              <td><span id="badge-${idx}" class="badge-status status-verified">${b.status}</span></td>
+              <td>
+                <button class="btn-table-dl" onclick="downloadBookToPhone('${b.download_url}', '${safeName}', '${b.class_num}th Standard ${b.subject_display}')">
+                  ⬇ Save to Phone
+                </button>
+              </td>
+              <td><a href="${b.download_url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">🔗 Drive Link</a></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        document.getElementById('btnDownload').disabled = true;
+        document.getElementById('lblStatus').innerText = "No verified Tamil Medium books match your filter.";
+        document.getElementById('booksTbody').innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No verified books found for the selected filter.</td></tr>`;
+        addLog("[SCAN] No books matched current filters.");
+      }
+    }
+
+    async function triggerDownloadAll() {
+      if (!discovered_books.length) return;
+      if (!confirm(`Start downloading all ${discovered_books.length} verified Tamil Medium textbooks directly to your phone?`)) return;
+
+      is_downloading = true;
+      cancel_requested = false;
+      document.getElementById('btnDownload').disabled = true;
+      document.getElementById('btnScan').disabled = true;
+      document.getElementById('btnCancel').style.display = 'inline-flex';
+      document.getElementById('progressBox').style.display = 'block';
+
+      addLog(`\\n[DOWNLOAD QUEUE] Starting batch download of ${discovered_books.length} Tamil Medium books to your device...\\n`);
+
+      for (let i = 0; i < discovered_books.length; i++) {
+        if (cancel_requested) {
+          addLog("[DOWNLOAD QUEUE] Cancelled by user.");
+          break;
+        }
+
+        const b = discovered_books[i];
+        const safeName = `${b.class_num}th_Tamil_Medium_${b.subject_display.replace(/[^a-zA-Z0-9_-]/g, '_')}_${(b.term || 'Full_Book').replace(/\\s+/g, '_')}.pdf`;
+        const pct = ((i + 1) / discovered_books.length) * 100;
+
+        document.getElementById('lblProgressBook').innerText = `Downloading ${b.class_num}th ${b.subject_display}...`;
+        document.getElementById('lblProgressPct').innerText = `${pct.toFixed(0)}%`;
+        document.getElementById('progressBarFill').style.width = `${pct}%`;
+        document.getElementById('lblOverallCount').innerText = `${i + 1} of ${discovered_books.length} completed`;
+
+        const badge = document.getElementById(`badge-${i}`);
+        if (badge) {
+          badge.className = "badge-status status-completed";
+          badge.innerText = "Completed";
+        }
+
+        downloadBookToPhone(b.download_url, safeName, `${b.class_num}th Standard ${b.subject_display}`);
+
+        // Small delay between downloads so mobile browsers don't block multiple files
+        if (i < discovered_books.length - 1) {
+          await new Promise(res => setTimeout(res, 1200));
+        }
+      }
+
+      is_downloading = false;
+      document.getElementById('btnScan').disabled = false;
+      document.getElementById('btnDownload').disabled = false;
+      document.getElementById('btnCancel').style.display = 'none';
+      document.getElementById('lblStatus').innerText = `Finished downloading ${discovered_books.length} books to phone!`;
+      addLog(`\\n[ALL DOWNLOADS COMPLETED] All ${discovered_books.length} files sent to your mobile phone's Downloads folder!\\n`);
+    }
+
+    function triggerCancel() {
+      cancel_requested = true;
+      addLog("[CONTROL] Cancellation requested.");
+    }
+
+    // Auto scan Class 8 on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      triggerScan();
+    });
+  </script>
+</body>
+</html>
